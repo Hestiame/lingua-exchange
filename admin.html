@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Lingua Exchange</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#060d1a;--bg2:#0a1525;--card:#0e1c30;--card2:#122038;
+  --border:rgba(0,210,255,0.1);--border2:rgba(0,210,255,0.18);
+  --teal:#00e5a0;--gold:#ffb800;--red:#ef4444;--yellow:#f59e0b;
+  --white:#fff;--gray:#8faabe;--gray2:#4d6a85;--text:#ddeeff;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+
+/* LOGIN */
+.login-screen{
+  position:fixed;inset:0;z-index:1000;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.login-card{
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:20px;padding:48px 40px;width:100%;max-width:400px;
+  text-align:center;
+}
+.login-logo{width:56px;height:56px;border-radius:14px;object-fit:cover;image-rendering:pixelated;margin:0 auto 20px;display:block}
+.login-title{font-size:22px;font-weight:800;color:var(--white);margin-bottom:6px;letter-spacing:-.5px}
+.login-sub{font-size:13px;color:var(--gray);margin-bottom:32px}
+.login-label{font-size:11px;font-weight:700;color:var(--gray2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:block;text-align:left}
+.login-input{
+  width:100%;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:10px;padding:12px 16px;font-size:14px;
+  color:var(--white);font-family:'Inter',sans-serif;outline:none;
+  transition:.2s;margin-bottom:16px;
+}
+.login-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,229,160,.1)}
+.login-btn{
+  width:100%;background:var(--teal);color:#000;
+  border:none;border-radius:10px;padding:14px;
+  font-size:15px;font-weight:700;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:.2s;margin-top:4px;
+}
+.login-btn:hover{background:#00ffb3;transform:translateY(-1px)}
+.login-error{
+  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);
+  border-radius:8px;padding:10px 14px;font-size:13px;color:#f87171;
+  margin-top:14px;display:none;
+}
+
+/* ADMIN PANEL */
+.admin-screen{display:none}
+nav{
+  background:rgba(6,13,26,.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{width:36px;height:36px;border-radius:8px;object-fit:cover;image-rendering:pixelated}
+.nav-brand strong{font-size:14px;font-weight:800;color:var(--white)}
+.nav-brand span{font-size:10px;color:var(--teal);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;display:block}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-badge{font-size:11px;font-weight:700;color:var(--teal);background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.2);padding:4px 12px;border-radius:20px}
+.logout-btn{background:none;border:1px solid var(--border2);color:var(--gray);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;transition:.2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+.admin-body{max-width:1100px;margin:0 auto;padding:40px 32px}
+.admin-title{font-size:28px;font-weight:900;color:var(--white);letter-spacing:-1px;margin-bottom:6px}
+.admin-sub{font-size:14px;color:var(--gray);margin-bottom:40px}
+
+/* GRID */
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.admin-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.card-head{background:rgba(0,229,160,.04);border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;gap:12px}
+.card-head-icon{font-size:20px}
+.card-head h3{font-size:15px;font-weight:700;color:var(--white)}
+.card-body{padding:24px}
+
+/* STATUS */
+.status-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.status-opt{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:10px;
+  border:1px solid var(--border);cursor:pointer;
+  transition:.2s;background:var(--bg2);
+}
+.status-opt:hover{border-color:var(--border2)}
+.status-opt.active-online{border-color:var(--teal);background:rgba(0,229,160,.05)}
+.status-opt.active-busy{border-color:var(--yellow);background:rgba(245,158,11,.05)}
+.status-opt.active-off{border-color:var(--red);background:rgba(239,68,68,.05)}
+.status-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.dot-online{background:var(--teal);box-shadow:0 0 8px rgba(0,229,160,.6)}
+.dot-busy{background:var(--yellow);box-shadow:0 0 8px rgba(245,158,11,.5)}
+.dot-off{background:var(--red);box-shadow:0 0 8px rgba(239,68,68,.5)}
+.status-opt span{font-size:14px;font-weight:600;color:var(--white)}
+.status-opt small{font-size:12px;color:var(--gray);margin-left:auto}
+
+/* TAXAS */
+.taxa-item{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.taxa-label{font-size:13px;font-weight:600;color:var(--gray);min-width:110px}
+.taxa-input{
+  flex:1;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:8px;padding:10px 14px;font-size:15px;font-weight:700;
+  color:var(--white);font-family:'Inter',sans-serif;outline:none;transition:.2s;
+}
+.taxa-input:focus{border-color:var(--teal)}
+.taxa-suffix{font-size:14px;color:var(--gray);font-weight:600}
+
+/* MENSAGEM */
+.msg-textarea{
+  width:100%;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:10px;padding:14px;font-size:13px;
+  color:var(--white);font-family:'Inter',sans-serif;outline:none;
+  resize:vertical;min-height:100px;transition:.2s;line-height:1.6;
+}
+.msg-textarea:focus{border-color:var(--teal)}
+
+/* MENSAGENS RECEBIDAS */
+.msgs-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.msg-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.msg-item-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.msg-item-type{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:20px}
+.type-faq{background:rgba(0,229,160,.1);color:var(--teal);border:1px solid rgba(0,229,160,.2)}
+.type-unknown{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+.msg-item-time{font-size:11px;color:var(--gray2)}
+.msg-item-text{font-size:13px;color:var(--text);line-height:1.6}
+.msgs-empty{text-align:center;padding:32px;color:var(--gray);font-size:14px}
+
+/* BTN SALVAR */
+.save-btn{
+  background:var(--teal);color:#000;border:none;
+  border-radius:10px;padding:12px 24px;
+  font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:.2s;
+  display:flex;align-items:center;gap:8px;margin-top:16px;
+}
+.save-btn:hover{background:#00ffb3;transform:translateY(-1px)}
+.saved-badge{
+  display:none;align-items:center;gap:6px;
+  font-size:13px;font-weight:600;color:var(--teal);
+  margin-top:12px;
+}
+
+/* PREVIEW */
+.preview-card{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-top:16px}
+.preview-label{font-size:11px;font-weight:700;color:var(--gray2);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.preview-status{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--white)}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat-num{font-size:22px;font-weight:900;color:var(--teal);display:block;letter-spacing:-1px}
+.stat-label{font-size:11px;color:var(--gray2);text-transform:uppercase;letter-spacing:1px;margin-top:4px;display:block}
+
+/* FULL WIDTH */
+.full-width{grid-column:1/-1}
+
+@media(max-width:768px){
+  .admin-grid{grid-template-columns:1fr}
+  .full-width{grid-column:1}
+  nav{padding:0 16px}
+  .admin-body{padding:24px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <img class="login-logo" src="data:image/png;base64,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" alt="Lingua Exchange">
+    <h1 class="login-title">Painel Admin</h1>
+    <p class="login-sub">Lingua Exchange · Acesso restrito</p>
+    <label class="login-label">Usuário</label>
+    <input class="login-input" type="text" id="loginUser" placeholder="Digite seu usuário" onkeydown="if(event.key==='Enter')doLogin()">
+    <label class="login-label">Senha</label>
+    <input class="login-input" type="password" id="loginPass" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Entrar no Painel</button>
+    <div class="login-error" id="loginError">Usuário ou senha incorretos.</div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="admin-screen" id="adminScreen">
+  <nav>
+    <div class="nav-brand">
+      <img src="data:image/png;base64,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" alt="LX">
+      <div><strong>Lingua Exchange</strong><span>Painel Admin</span></div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-badge">🔐 Admin</div>
+      <a href="lingua-exchange-FINAL.html" target="_blank" style="background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.2);color:var(--teal);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;transition:.2s">Ver Site →</a>
+      <button class="logout-btn" onclick="doLogout()">Sair</button>
+    </div>
+  </nav>
+
+  <div class="admin-body">
+    <h1 class="admin-title">Painel de Controle</h1>
+    <p class="admin-sub">Gerencie o site da Lingua Exchange em tempo real.</p>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-box"><span class="stat-num" id="statMsgs">0</span><span class="stat-label">Mensagens recebidas</span></div>
+      <div class="stat-box"><span class="stat-num" id="statFaq">0</span><span class="stat-label">FAQs respondidas</span></div>
+      <div class="stat-box"><span class="stat-num" id="statUnk">0</span><span class="stat-label">Não reconhecidas</span></div>
+    </div>
+
+    <div class="admin-grid">
+
+      <!-- STATUS -->
+      <div class="admin-card">
+        <div class="card-head"><span class="card-head-icon">🟢</span><h3>Status do Serviço</h3></div>
+        <div class="card-body">
+          <div class="status-opts">
+            <div class="status-opt" id="opt-online" onclick="setStatus('online')">
+              <div class="status-dot dot-online"></div>
+              <span>Operacional</span>
+              <small>Aceitando normalmente</small>
+            </div>
+            <div class="status-opt" id="opt-busy" onclick="setStatus('busy')">
+              <div class="status-dot dot-busy"></div>
+              <span>Alta Demanda</span>
+              <small>Tempo de espera maior</small>
+            </div>
+            <div class="status-opt" id="opt-off" onclick="setStatus('off')">
+              <div class="status-dot dot-off"></div>
+              <span>Fora do Ar</span>
+              <small>Sem operações no momento</small>
+            </div>
+          </div>
+          <div class="preview-card">
+            <div class="preview-label">Preview</div>
+            <div class="preview-status"><div class="status-dot" id="previewDot"></div><span id="previewText">Operacional</span></div>
+          </div>
+          <button class="save-btn" onclick="saveStatus()">💾 Salvar Status</button>
+          <div class="saved-badge" id="statusSaved">✓ Status salvo! Recarregue o site principal.</div>
+        </div>
+      </div>
+
+      <!-- TAXAS -->
+      <div class="admin-card">
+        <div class="card-head"><span class="card-head-icon">📊</span><h3>Taxas do Site</h3></div>
+        <div class="card-body">
+          <div class="taxa-item">
+            <span class="taxa-label">👑 VIP</span>
+            <input class="taxa-input" type="number" id="taxaVip" value="5" min="0" max="100">
+            <span class="taxa-suffix">%</span>
+          </div>
+          <div class="taxa-item">
+            <span class="taxa-label">⚖️ Intermediação</span>
+            <input class="taxa-input" type="number" id="taxaInt" value="7" min="0" max="100">
+            <span class="taxa-suffix">%</span>
+          </div>
+          <div class="taxa-item">
+            <span class="taxa-label">⚡ Instantâneo</span>
+            <input class="taxa-input" type="number" id="taxaInst" value="10" min="0" max="100">
+            <span class="taxa-suffix">%</span>
+          </div>
+          <button class="save-btn" onclick="saveTaxas()">💾 Salvar Taxas</button>
+          <div class="saved-badge" id="taxasSaved">✓ Taxas salvas com sucesso!</div>
+          <p style="font-size:12px;color:var(--gray2);margin-top:12px">⚠️ As taxas são salvas localmente. Para atualizar o site principal, copie os valores.</p>
+        </div>
+      </div>
+
+      <!-- MENSAGEM BOAS VINDAS -->
+      <div class="admin-card">
+        <div class="card-head"><span class="card-head-icon">💬</span><h3>Mensagem de Boas Vindas</h3></div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--gray);margin-bottom:14px">Mensagem exibida quando alguém abre o chat de suporte.</p>
+          <textarea class="msg-textarea" id="welcomeMsg">Olá! 👋 Bem-vindo ao suporte da Lingua Exchange!
+Sou {nome} e estou aqui para te ajudar.
+Escolha uma dúvida abaixo ou digite sua pergunta.</textarea>
+          <button class="save-btn" onclick="saveWelcome()">💾 Salvar Mensagem</button>
+          <div class="saved-badge" id="welcomeSaved">✓ Mensagem salva!</div>
+        </div>
+      </div>
+
+      <!-- AVISO GLOBAL -->
+      <div class="admin-card">
+        <div class="card-head"><span class="card-head-icon">📢</span><h3>Aviso Global</h3></div>
+        <div class="card-body">
+          <p style="font-size:13px;color:var(--gray);margin-bottom:14px">Texto exibido no badge de status do widget de atendimento.</p>
+          <textarea class="msg-textarea" id="avisoMsg" style="min-height:72px">● Online agora</textarea>
+          <button class="save-btn" onclick="saveAviso()">💾 Salvar Aviso</button>
+          <div class="saved-badge" id="avisoSaved">✓ Aviso salvo!</div>
+        </div>
+      </div>
+
+      <!-- MENSAGENS RECEBIDAS -->
+      <div class="admin-card full-width">
+        <div class="card-head">
+          <span class="card-head-icon">📥</span>
+          <h3>Mensagens Recebidas pelo Chat</h3>
+          <button onclick="clearMsgs()" style="margin-left:auto;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#f87171;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Limpar tudo</button>
+        </div>
+        <div class="card-body">
+          <div class="msgs-list" id="msgsList">
+            <div class="msgs-empty">Nenhuma mensagem ainda. As mensagens chegam quando alguém usa o chat no site.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+var CORRECT_USER = 'linguadesogr4';
+var CORRECT_PASS = 'linguaaura67';
+
+// LOGIN
+function doLogin(){
+  var u = document.getElementById('loginUser').value.trim();
+  var p = document.getElementById('loginPass').value;
+  var err = document.getElementById('loginError');
+  if(u === CORRECT_USER && p === CORRECT_PASS){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminScreen').style.display='block';
+    err.style.display='none';
+    loadData();
+  } else {
+    err.style.display='block';
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginPass').focus();
+  }
+}
+
+function doLogout(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('adminScreen').style.display='none';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+}
+
+// STATUS
+var currentStatus = 'online';
+var statusConfig = {
+  online:{text:'Operacional',dotClass:'dot-online',optClass:'active-online'},
+  busy:{text:'Alta Demanda',dotClass:'dot-busy',optClass:'active-busy'},
+  off:{text:'Fora do Ar',dotClass:'dot-off',optClass:'active-off'}
+};
+
+function setStatus(s){
+  currentStatus = s;
+  var cfg = statusConfig[s];
+  ['online','busy','off'].forEach(function(k){
+    var el = document.getElementById('opt-'+k);
+    el.className = 'status-opt' + (k===s ? ' ' + statusConfig[k].optClass : '');
+  });
+  var dot = document.getElementById('previewDot');
+  var txt = document.getElementById('previewText');
+  dot.className = 'status-dot ' + cfg.dotClass;
+  txt.textContent = cfg.text;
+}
+
+function saveStatus(){
+  localStorage.setItem('admin_status', currentStatus);
+  var badge = document.getElementById('statusSaved');
+  badge.style.display='flex';
+  setTimeout(function(){badge.style.display='none';},3000);
+}
+
+// TAXAS
+function saveTaxas(){
+  var vip = document.getElementById('taxaVip').value;
+  var int = document.getElementById('taxaInt').value;
+  var inst = document.getElementById('taxaInst').value;
+  localStorage.setItem('taxa_vip', vip);
+  localStorage.setItem('taxa_int', int);
+  localStorage.setItem('taxa_inst', inst);
+  var badge = document.getElementById('taxasSaved');
+  badge.style.display='flex';
+  setTimeout(function(){badge.style.display='none';},2500);
+}
+
+// MENSAGEM BOAS VINDAS
+function saveWelcome(){
+  var msg = document.getElementById('welcomeMsg').value;
+  localStorage.setItem('welcome_msg', msg);
+  var badge = document.getElementById('welcomeSaved');
+  badge.style.display='flex';
+  setTimeout(function(){badge.style.display='none';},2500);
+}
+
+// AVISO
+function saveAviso(){
+  var aviso = document.getElementById('avisoMsg').value;
+  localStorage.setItem('aviso_msg', aviso);
+  var badge = document.getElementById('avisoSaved');
+  badge.style.display='flex';
+  setTimeout(function(){badge.style.display='none';},2500);
+}
+
+// MENSAGENS RECEBIDAS
+function loadMsgs(){
+  var msgs = JSON.parse(localStorage.getItem('chat_msgs') || '[]');
+  var list = document.getElementById('msgsList');
+  var faqCount = 0, unkCount = 0;
+  if(msgs.length === 0){
+    list.innerHTML = '<div class="msgs-empty">Nenhuma mensagem ainda. As mensagens chegam quando alguém usa o chat no site.</div>';
+  } else {
+    list.innerHTML = '';
+    msgs.slice().reverse().forEach(function(m){
+      var isFaq = m.type === 'faq';
+      if(isFaq) faqCount++; else unkCount++;
+      var div = document.createElement('div');
+      div.className = 'msg-item';
+      div.innerHTML =
+        '<div class="msg-item-top">' +
+        '<span class="msg-item-type ' + (isFaq?'type-faq':'type-unknown') + '">' + (isFaq?'FAQ':'Não reconhecida') + '</span>' +
+        '<span class="msg-item-time">' + m.time + '</span>' +
+        '</div>' +
+        '<div class="msg-item-text">' + m.text + '</div>';
+      list.appendChild(div);
+    });
+  }
+  document.getElementById('statMsgs').textContent = msgs.length;
+  document.getElementById('statFaq').textContent = faqCount;
+  document.getElementById('statUnk').textContent = unkCount;
+}
+
+function clearMsgs(){
+  if(confirm('Limpar todas as mensagens?')){
+    localStorage.removeItem('chat_msgs');
+    loadMsgs();
+  }
+}
+
+// LOAD ALL DATA
+function loadData(){
+  var status = localStorage.getItem('admin_status') || 'online';
+  setStatus(status);
+  var vip = localStorage.getItem('taxa_vip');
+  var int = localStorage.getItem('taxa_int');
+  var inst = localStorage.getItem('taxa_inst');
+  if(vip) document.getElementById('taxaVip').value = vip;
+  if(int) document.getElementById('taxaInt').value = int;
+  if(inst) document.getElementById('taxaInst').value = inst;
+  var welcome = localStorage.getItem('welcome_msg');
+  if(welcome) document.getElementById('welcomeMsg').value = welcome;
+  var aviso = localStorage.getItem('aviso_msg');
+  if(aviso) document.getElementById('avisoMsg').value = aviso;
+  loadMsgs();
+  setInterval(loadMsgs, 5000);
+}
+
+// Salvar msgs do site principal no localStorage para o admin ler
+// Expor função global para o site principal chamar
+window.adminLogMsg = function(type, text){
+  var msgs = JSON.parse(localStorage.getItem('chat_msgs') || '[]');
+  msgs.push({type:type, text:text, time: new Date().toLocaleString('pt-BR')});
+  if(msgs.length > 100) msgs = msgs.slice(-100);
+  localStorage.setItem('chat_msgs', JSON.stringify(msgs));
+};
+</script>
+</body>
+</html>
