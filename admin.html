@@ -254,15 +254,11 @@ firebase.initializeApp({
 });
 var db = firebase.firestore();
 
-var USER_HASH = '0x875ed1aa';
-var PASS_HASH = '0x212866e6';
+var _u = 'bGluZ3VhZGVzb2dyNA==';
+var _p = 'bGluZ3VhYXVyYTY3';
 var WEBHOOK = 'https://discord.com/api/webhooks/1510533792513790042/tDT0CJM76xr7pnyUWkYtKk95Qn0Tz57XDwuE3uoQ0i9BV7gEzlk8sJxwQtwuGdBsxPU4';
 
-function hashStr(s){
-  var h=0;
-  for(var i=0;i<s.length;i++) h=((h*31)+s.charCodeAt(i))&0xFFFFFFFF;
-  return '0x'+h.toString(16);
-}
+function _d(s){ return atob(s); }
 
 var currentUser=null, allMessages=[], currentFilter='all', teamMembers=[], unsubMsgs=null;
 
@@ -307,7 +303,7 @@ async function doLogin(){
   var u=document.getElementById('loginUser').value.trim();
   var p=document.getElementById('loginPass').value;
   var err=document.getElementById('loginError');
-  if(hashStr(u)===USER_HASH && hashStr(p)===PASS_HASH){
+  if(u===_d(_u) && p===_d(_p)){
     currentUser={name:'Dono',user:u,role:'owner'};
     loginSuccess(); return;
   }
