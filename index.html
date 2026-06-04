@@ -472,45 +472,92 @@ body.light .orb2{background:rgba(33,150,243,.1)}
 
 <script>
 
-// SYNC COM ADMIN (replaced by Firebase)
-(function(){return;// 
-  var vip  = localStorage.getItem('taxa_vip');
-  var int_ = localStorage.getItem('taxa_int');
-  var inst = localStorage.getItem('taxa_inst');
+// FIREBASE SYNC
+(function() {
+  var FB_CONFIG = {
+    apiKey: "AIzaSyDWddc-xYHRQSNO2PQUx6Umrcu5cQRq6Ng",
+    authDomain: "lingua-exchange.firebaseapp.com",
+    projectId: "lingua-exchange",
+    storageBucket: "lingua-exchange.firebasestorage.app",
+    messagingSenderId: "915121597859",
+    appId: "1:915121597859:web:f62727949e011a8b2d3e16"
+  };
 
-  // Multiplicadores para a calc
-  window._taxaVip  = 1 - parseFloat(vip  || '5')  / 100;
-  window._taxaInt  = 1 - parseFloat(int_ || '7')  / 100;
-  window._taxaInst = 1 - parseFloat(inst || '10') / 100;
+  // Load Firebase compat from CDN
+  var script1 = document.createElement('script');
+  script1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+  script1.onload = function() {
+    var script2 = document.createElement('script');
+    script2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
+    script2.onload = function() {
+      try {
+        var app = firebase.initializeApp(FB_CONFIG, 'site');
+        var db = firebase.firestore(app);
+        var settingsRef = db.collection('settings').doc('main');
 
-  // Atualizar % nos cards de taxa
-  var ratePcts = document.querySelectorAll('.rate-pct');
-  if(vip  && ratePcts[0]) ratePcts[0].textContent = vip  + '%';
-  if(int_ && ratePcts[1]) ratePcts[1].textContent = int_ + '%';
-  if(inst && ratePcts[2]) ratePcts[2].textContent = inst + '%';
+        // Listen for real-time updates
+        settingsRef.onSnapshot(function(snap) {
+          if(!snap.exists) return;
+          var d = snap.data();
 
-  // Atualizar hero stat
-  if(vip){
-    var hstat = document.querySelector('.hstat-num.t');
-    if(hstat) hstat.textContent = vip + '%';
-  }
+          // Update taxa cards
+          if(d.taxaVip !== undefined) {
+            window._taxaVip = 1 - d.taxaVip/100;
+            var els = document.querySelectorAll('.rate-pct');
+            if(els[0]) els[0].textContent = d.taxaVip + '%';
+            var hstat = document.querySelector('.hstat-num.t');
+            if(hstat) hstat.textContent = d.taxaVip + '%';
+            var cpcts = document.querySelectorAll('.c-pct');
+            if(cpcts[0]) cpcts[0].textContent = d.taxaVip + '% de taxa';
+          }
+          if(d.taxaInt !== undefined) {
+            window._taxaInt = 1 - d.taxaInt/100;
+            var els2 = document.querySelectorAll('.rate-pct');
+            if(els2[1]) els2[1].textContent = d.taxaInt + '%';
+            var cpcts2 = document.querySelectorAll('.c-pct');
+            if(cpcts2[1]) cpcts2[1].textContent = d.taxaInt + '% de taxa';
+          }
+          if(d.taxaInst !== undefined) {
+            window._taxaInst = 1 - d.taxaInst/100;
+            var els3 = document.querySelectorAll('.rate-pct');
+            if(els3[2]) els3[2].textContent = d.taxaInst + '%';
+            var cpcts3 = document.querySelectorAll('.c-pct');
+            if(cpcts3[2]) cpcts3[2].textContent = d.taxaInst + '% de taxa';
+          }
 
-  // Atualizar % na calculadora
-  var cpcts = document.querySelectorAll('.c-pct');
-  if(cpcts[0]) cpcts[0].textContent = (vip  || '5')  + '% de taxa';
-  if(cpcts[1]) cpcts[1].textContent = (int_ || '7')  + '% de taxa';
-  if(cpcts[2]) cpcts[2].textContent = (inst || '10') + '% de taxa';
+          // Update widget status
+          if(d.aviso) {
+            var wOnline = document.getElementById('wOnline');
+            if(wOnline) wOnline.textContent = d.aviso;
+          }
 
-  // Status no widget
-  var status = localStorage.getItem('admin_status') || 'online';
-  var aviso  = localStorage.getItem('aviso_msg');
-  var statusMap = {online:'● Online agora', busy:'⚠️ Alta demanda', off:'🔴 Fora do ar'};
-  var wOnline = document.getElementById('wOnline');
-  if(wOnline) wOnline.textContent = aviso || statusMap[status] || '● Online agora';
+          // Update welcome msg
+          if(d.welcomeMsg) window._customWelcome = d.welcomeMsg;
 
-  // Mensagem de boas vindas customizada
-  var welcome = localStorage.getItem('welcome_msg');
-  if(welcome) window._customWelcome = welcome;
+          // Recalculate
+          var inp = document.getElementById('cInp');
+          if(inp) inp.dispatchEvent(new Event('input'));
+        });
+
+        // fbLogMsg - save messages to Firebase
+        window.fbLogMsg = function(type, text, agentName) {
+          db.collection('messages').add({
+            type: type,
+            text: text,
+            agent: agentName || 'auto',
+            time: new Date().toISOString(),
+            replied: false,
+            reply: null,
+            replyBy: null,
+            replyTime: null
+          }).catch(function(e) { console.log('fbLogMsg error:', e); });
+        };
+
+      } catch(e) { console.log('Firebase init error:', e); }
+    };
+    document.head.appendChild(script2);
+  };
+  document.head.appendChild(script1);
 })();
 
 // CALC
@@ -606,7 +653,7 @@ function wTyping(cb){
 function wFaq(key){
   wMsg(faqs[key].q,'user');
   wTyping(function(){wMsg(faqs[key].a,'bot');});
-  wLogAdmin('faq', faqs[key].q, agent ? agent.name : 'auto'); if(window.fbLogMsg) fbLogMsg('faq', faqs[key].q, agent ? agent.name : 'auto'); wWebhook('❓ FAQ: '+faqs[key].q,'');
+  if(window.fbLogMsg) fbLogMsg('faq', faqs[key].q, agent ? agent.name : 'auto'); wWebhook('❓ FAQ: '+faqs[key].q,'');
 }
 function wSend(){
   var inp=document.getElementById('wInp');
@@ -614,7 +661,7 @@ function wSend(){
   inp.value='';wMsg(text,'user');
   var key=detectFaq(text);
   if(key){wTyping(function(){wMsg(faqs[key].a,'bot');});wWebhook('❓ Reconhecida: '+text,faqs[key].a);}
-  else{wTyping(function(){wMsg('Não encontrei resposta automática. Nossa equipe foi notificada! Entre no Discord para atendimento imediato. 🚀','bot');});wLogAdmin('unknown', text, agent ? agent.name : 'auto'); if(window.fbLogMsg) fbLogMsg('unknown', text, agent ? agent.name : 'auto'); wWebhook('💬 Não reconhecida:',text);}
+  else{wTyping(function(){wMsg('Não encontrei resposta automática. Nossa equipe foi notificada! Entre no Discord para atendimento imediato. 🚀','bot');});if(window.fbLogMsg) fbLogMsg('unknown', text, agent ? agent.name : 'auto'); wWebhook('💬 Não reconhecida:',text);}
 }
 function wLogAdmin(type, text){
   try{
