@@ -540,7 +540,7 @@ body.light .orb2{background:rgba(33,150,243,.1)}
         });
 
         // fbLogMsg - save messages to Firebase
-        window.fbLogMsg = function(type, text, agentName) {
+        window.fbLogMsg = function(type, text, agentName, onSaved) {
           db.collection('messages').add({
             type: type,
             text: text,
@@ -550,6 +550,9 @@ body.light .orb2{background:rgba(33,150,243,.1)}
             reply: null,
             replyBy: null,
             replyTime: null
+          }).then(function(docRef) {
+            window._fbDb = db;
+            if(onSaved) onSaved(docRef.id);
           }).catch(function(e) { console.log('fbLogMsg error:', e); });
         };
 
@@ -799,6 +802,56 @@ function toggleTheme(){
   animate();
   window.addEventListener('resize', resize);
 })();
+
+
+// ESCUTA RESPOSTAS DO ADMIN EM TEMPO REAL
+window._activeMsgId = null;
+
+function listenForReply(msgId) {
+  if(!window._fbDb) return;
+  window._activeMsgId = msgId;
+  window._fbDb.collection('messages').doc(msgId).onSnapshot(function(snap) {
+    if(!snap.exists) return;
+    var d = snap.data();
+    if(d.replied && d.reply && d.replyBy) {
+      // Remove typing indicator if still showing
+      var typing = document.getElementById('wtyping');
+      if(typing) typing.remove();
+      // Show admin reply in chat
+      var msgs = document.getElementById('wMsgs');
+      // Check if reply already shown
+      if(document.getElementById('reply-' + msgId)) return;
+      var div = document.createElement('div');
+      div.className = 'msg bot';
+      div.id = 'reply-' + msgId;
+      var rt = new Date(d.replyTime), st = new Date(d.time);
+      var diff = Math.round((rt - st) / 60000);
+      var diffStr = diff < 1 ? 'agora' : (diff < 60 ? diff + ' min atrás' : Math.round(diff/60) + 'h atrás');
+      div.innerHTML = '<div style="display:flex;gap:8px;align-items:flex-end">' +
+        '<div><div class="msg-bubble">' + d.reply.replace(/\n/g,'<br>') + '</div>' +
+        '<div class="msg-time">' + d.replyBy + ' · ' + diffStr + '</div></div></div>';
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+      // Show waiting message replaced
+      var waiting = document.getElementById('waiting-reply-' + msgId);
+      if(waiting) waiting.remove();
+    }
+  });
+}
+
+// Show waiting message after unknown question
+function showWaitingReply(msgId) {
+  var msgs = document.getElementById('wMsgs');
+  if(!msgs) return;
+  var div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'waiting-reply-' + msgId;
+  div.innerHTML = '<div style="display:flex;gap:8px;align-items:flex-end">' +
+    '<div><div class="msg-bubble" style="color:var(--gray);font-style:italic">⏳ Aguardando resposta da equipe...</div></div></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  listenForReply(msgId);
+}
 
 // SMOOTH SCROLL
 document.querySelectorAll('a[href^="#"]').forEach(function(a){
